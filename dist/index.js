@@ -116965,6 +116965,10 @@ async function run(app) {
 }
 
 ;// CONCATENATED MODULE: ./app.js
+
+const github_ops = require("./github_operations");
+const script_ops = require("./script_operations");
+
 /**
  * This is the main entrypoint to your Probot app
  * @param {import('probot').Probot} app
@@ -116984,14 +116988,47 @@ async function run(app) {
     });
     
   
-    app.on("repository_dispatch", async (context) => {
-      context.log.info("repository_dispatch event received");
-  
+    app.on("repository_dispatch", async (context) => { 
       const { action, repository, client_payload } = context.payload;
       const releaseTag = client_payload.release_tag;
-  
       context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag}, from repository: ${repository.full_name}`);
-      // Handle the repository_dispatch event with releaseTag
+
+      const title = "Update to CLIc@" + releaseTag;
+      const issue_body = `
+## Release Update: ${releaseTag}
+
+A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
+
+### Info:
+**Release Tag:** ${releaseTag}
+**Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
+
+Please review the changes and update the code bindings accordingly.
+Cheers! 🎉
+`;
+      const pr_body = `
+## Release Update: ${releaseTag}
+
+A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
+
+### Info:
+**Release Tag:** ${releaseTag}
+**Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
+
+Please review the changes and update the code bindings accordingly.
+Cheers! 🎉
+
+closes #${issue.number}
+`;
+
+      const { issue } = github_ops.createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
+      context.log.info(`Issue created: ${issue.html_url}`);
+      const { branch } = github_ops.createBranch(context, repository.owner.login, repository.name, "main", "update-clic-" + releaseTag);
+      context.log.info(`Branch created: ${branch.name}`);
+      script_ops.updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
+      context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
+      const { pr } = github_ops.createPullRequest(context, repository.owner.login, repository.name, branch.name, "main", title, pr_body);
+      context.log.info(`Pull Request created: ${pr.html_url}`);
     });
   
 
