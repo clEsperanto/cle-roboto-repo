@@ -20,7 +20,7 @@ provider:
 
 functions:
   webhooks:
-    handler: handler.webhooks
+    handler: index.handler
     events:
       - httpApi:
           path: /api/github/webhooks
