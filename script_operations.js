@@ -16,7 +16,7 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
   await execPromise(`git clone ${repo_data.clone_url} ${repo_dir}`);
   await execPromise(`cd ${repo_dir} && git fetch && git checkout ${branch_name}`);
   await execPromise(`pip3 install requests`);
-  await execPromise(`python3 ${gencle_dir}/${scriptName} ${repo_dir} ${tag}`);
+  await execPromise(`python3 ${gencle_dir}/update_scripts/${scriptName} ${repo_dir} ${tag}`);
   const { stdout: diff } = await execPromise(`cd ${repo_dir} && git diff`);
   if (diff) {
     await execPromise(`cd ${repo_dir} && git add . && git commit -m "Update to ${tag}" && git push`);
