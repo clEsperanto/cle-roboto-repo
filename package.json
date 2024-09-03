@@ -1,0 +1,47 @@
+{
+  "name": "cle-roboto",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A Probot app which update the clesperanto bindings, and may do some more stuff in future.",
+  "author": "Stephane Rigaud (https://x.com/strigaud)",
+  "license": "ISC",
+  "homepage": "github:clEsperanto/cle-roboto-app",
+  "keywords": [
+    "probot",
+    "github",
+    "clesperanto"
+  ],
+  "scripts": {
+    "start": "probot run ./index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@probot/adapter-github-actions": "^4.0.0"
+  },
+  "devDependencies": {
+    "@semantic-release/git": "^10.0.1",
+    "esbuild": "^0.20.1",
+    "nock": "^14.0.0-beta.5",
+    "semantic-release": "^23.0.0"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "dist/index.js"
+          ],
+          "message": "build(release): compiled action for ${nextRelease.version}\n\n[skip ci]"
+        }
+      ],
+      "@semantic-release/github"
+    ]
+  },
+  "type": "module"
+}
