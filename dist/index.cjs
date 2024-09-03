@@ -116968,30 +116968,35 @@ const { exec } = __nccwpck_require__(32081);
 const execPromise = promisify(exec);
 
 async function updateBindings(context, owner, repo, branch_name, tag, scriptName) {
-  const { data: gencle_data } = await context.github.repos.get({
-    owner,
-    repo: 'gencle',
-  });
-  const gencle_dir = path.join('/tmp', 'gencle');
-  await execPromise(`git clone ${gencle_data.clone_url} ${gencle_dir}`);
-  const { data: repo_data } = await context.github.repos.get({
-    owner,
-    repo,
-  });
-  const repo_dir = path.join('/tmp', repo);
-  await execPromise(`git clone ${repo_data.clone_url} ${repo_dir}`);
-  await execPromise(`cd ${repo_dir} && git fetch && git checkout ${branch_name}`);
-  await execPromise(`pip3 install requests`);
-  await execPromise(`python3 ${gencle_dir}/update_scripts/${scriptName} ${repo_dir} ${tag}`);
-  const { stdout: diff } = await execPromise(`cd ${repo_dir} && git diff`);
-  if (diff) {
-    await execPromise(`cd ${repo_dir} && git add . && git commit -m "Update to ${tag}" && git push`);
-  } else {
-    console.log("No changes made by the update script");
+  try {
+    const { data: gencle_data } = await context.github.repos.get({
+      owner,
+      repo: 'gencle',
+    });
+    const gencle_dir = path.join('/tmp', 'gencle');
+    await execPromise(`git clone ${gencle_data.clone_url} ${gencle_dir}`);
+    const { data: repo_data } = await context.github.repos.get({
+      owner,
+      repo,
+    });
+    const repo_dir = path.join('/tmp', repo);
+    await execPromise(`git clone ${repo_data.clone_url} ${repo_dir}`);
+    await execPromise(`cd ${repo_dir} && git fetch && git checkout ${branch_name}`);
+    await execPromise(`pip3 install requests`);
+    await execPromise(`python3 ${gencle_dir}/update_scripts/${scriptName} ${repo_dir} ${tag}`);
+    const { stdout: diff } = await execPromise(`cd ${repo_dir} && git diff`);
+    if (diff) {
+      await execPromise(`cd ${repo_dir} && git add . && git commit -m "Update to ${tag}" && git push`);
+    } else {
+      console.log("No changes made by the update script");
+    }
+    // Clean up
+    await execPromise(`rm -rf ${gencle_dir}`);
+    await execPromise(`rm -rf ${repo_dir}`);
+  } catch (error) {
+    console.error("Error updating bindings:", error);
+    throw error;
   }
-  // Clean up
-  await execPromise(`rm -rf ${gencle_dir}`);
-  await execPromise(`rm -rf ${repo_dir}`);
 }
 
 /**
@@ -117005,13 +117010,18 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
  * @returns 
  */
 async function findIssueByTitle(context, owner, repo, issue_title, issue_labels) {
-  const { data: issues } = await context.github.issues.listForRepo({
-      owner,
-      repo,
-      state: "all",
-      labels: issue_labels,
-  });
-  return issues.find((issue) => issue.title === issue_title);
+  try {
+    const { data: issues } = await context.octokit.issues.listForRepo({
+        owner,
+        repo,
+        labels: issue_labels.join(","),
+    });
+    return issues.find((issue) => issue.title === issue_title);
+  }
+  catch (error) {
+    console.error("Error finding issue:", error);
+    throw error;
+  }
 }
 
 /**
@@ -117032,7 +117042,7 @@ async function createIssue(context, owner, repo, issue_title, issue_body, issue_
   try {
       let _issue = await findIssueByTitle(context, owner, repo, issue_title, issue_labels);
       if (!_issue) {
-          _issue = (await context.github.issues.create({
+          _issue = (await context.octokit.issues.create({
               owner,
               repo,
               title: issue_title,
@@ -117040,13 +117050,13 @@ async function createIssue(context, owner, repo, issue_title, issue_body, issue_
               labels: issue_labels,
           })).data;
       } else if (_issue.state === "closed") {
-          await context.github.issues.update({
+          await context.octokit.issues.update({
               owner,
               repo,
               issue_number: _issue.number,
               state: "open",
           });
-          await context.github.issues.createComment({
+          await context.octokit.issues.createComment({
               owner,
               repo,
               issue_number: _issue.number,
@@ -117070,11 +117080,16 @@ async function createIssue(context, owner, repo, issue_title, issue_body, issue_
 * @returns 
 */
 async function findBranchByName(context, owner, repo, branch_name) {
-  const { data: branches } = await context.github.repos.listBranches({
-      owner,
-      repo,
-  });
-  return branches.find((branch) => branch.name === branch_name);
+  try {
+    const { data: branches } = await context.octokit.repos.listBranches({
+        owner,
+        repo,
+    });
+    return branches.find((branch) => branch.name === branch_name);
+  } catch (error) {
+    console.error("Error finding branch:", error);
+    throw error;
+  }
 }
 
 /**
@@ -117092,12 +117107,12 @@ async function createBranch(context, owner, repo, branch_name) {
   try {
       let _branch = await findBranchByName(context, owner, repo, branch_name);
       if (!_branch) {
-          const { data: main_branch } = await context.github.repos.getBranch({
+          const { data: main_branch } = await context.octokit.repos.getBranch({
               owner,
               repo,
               branch: "main",
           });
-          _branch = (await context.github.git.createRef({
+          _branch = (await context.octokit.git.createRef({
               owner,
               repo,
               ref: `refs/heads/${branch_name}`,
@@ -117122,12 +117137,17 @@ async function createBranch(context, owner, repo, branch_name) {
 * @returns 
 */
 async function findPullRequest(context, owner, repo, branch_name, pr_title) {
-  const { data: pull_requests } = await context.github.pulls.list({
-      owner,
-      repo,
-      state: "open",
-  });
-  return pull_requests.find((pr) => pr.head.ref === branch_name && pr.title === pr_title);
+  try {
+    const { data: pull_requests } = await context.octokit.pulls.list({
+        owner,
+        repo,
+        state: "open",
+    });
+    return pull_requests.find((pr) => pr.head.ref === branch_name && pr.title === pr_title);
+  } catch (error) {
+    console.error("Error finding pull request:", error);
+    throw error;
+  }
 }
 
 /**
@@ -117143,21 +117163,21 @@ async function findPullRequest(context, owner, repo, branch_name, pr_title) {
 */
 async function createPullRequest(context, owner, repo, branch_name, pr_title, pr_body) {
   try {
-      let _pr = await findPullRequest(context, owner, repo, branch_name, pr_title);
-      if (!_pr) {
-          _pr = (await context.github.pulls.create({
-              owner,
-              repo,
-              title: pr_title,
-              head: branch_name,
-              base: "main",
-              body: pr_body,
-          })).data;
-      }
-      return _pr;
+    let _pr = await findPullRequest(context, owner, repo, branch_name, pr_title);
+    if (!_pr) {
+        _pr = (await context.octokit.pulls.create({
+            owner,
+            repo,
+            title: pr_title,
+            head: branch_name,
+            base: "main",
+            body: pr_body,
+        })).data;
+    }
+    return _pr;
   } catch (error) {
-      console.error("Error creating pull request:", error);
-      throw error;
+    console.error("Error creating pull request:", error);
+    throw error;
   }
 }
 
