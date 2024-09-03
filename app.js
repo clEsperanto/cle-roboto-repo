@@ -1,6 +1,6 @@
 
-const github_ops = require("./github_operations");
-const script_ops = require("./script_operations");
+import github_ops from "./github_operations";
+import script_ops from "./script_operations";
 
 /**
  * This is the main entrypoint to your Probot app

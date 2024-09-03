@@ -102427,6 +102427,22 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 17921:
+/***/ ((module) => {
+
+module.exports = eval("require")("./github_operations");
+
+
+/***/ }),
+
+/***/ 49121:
+/***/ ((module) => {
+
+module.exports = eval("require")("./script_operations");
+
+
+/***/ }),
+
 /***/ 39491:
 /***/ ((module) => {
 
@@ -116964,10 +116980,14 @@ async function run(app) {
     });
 }
 
+// EXTERNAL MODULE: ../../../home/strigaud/.nvm/versions/node/v20.17.0/lib/node_modules/@vercel/ncc/dist/ncc/@@notfound.js?./github_operations
+var _notfoundgithub_operations = __nccwpck_require__(17921);
+// EXTERNAL MODULE: ../../../home/strigaud/.nvm/versions/node/v20.17.0/lib/node_modules/@vercel/ncc/dist/ncc/@@notfound.js?./script_operations
+var _notfoundscript_operations = __nccwpck_require__(49121);
 ;// CONCATENATED MODULE: ./app.js
 
-const github_ops = require("./github_operations");
-const script_ops = require("./script_operations");
+
+
 
 /**
  * This is the main entrypoint to your Probot app
@@ -117021,13 +117041,13 @@ Cheers! 🎉
 closes #${issue.number}
 `;
 
-      const { issue } = github_ops.createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
+      const { issue } = _notfoundgithub_operations.createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
       context.log.info(`Issue created: ${issue.html_url}`);
-      const { branch } = github_ops.createBranch(context, repository.owner.login, repository.name, "main", "update-clic-" + releaseTag);
+      const { branch } = _notfoundgithub_operations.createBranch(context, repository.owner.login, repository.name, "main", "update-clic-" + releaseTag);
       context.log.info(`Branch created: ${branch.name}`);
-      script_ops.updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
+      _notfoundscript_operations.updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
       context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
-      const { pr } = github_ops.createPullRequest(context, repository.owner.login, repository.name, branch.name, "main", title, pr_body);
+      const { pr } = _notfoundgithub_operations.createPullRequest(context, repository.owner.login, repository.name, branch.name, "main", title, pr_body);
       context.log.info(`Pull Request created: ${pr.html_url}`);
     });
   
