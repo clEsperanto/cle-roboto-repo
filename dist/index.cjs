@@ -117007,7 +117007,7 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
  * @param {*} repo 
  * @param {*} issue_title 
  * @param {*} issue_labels 
- * @returns 
+ * @returns {Object|undefined} The issue object if found, otherwise undefined
  */
 async function findIssueByTitle(context, owner, repo, issue_title, issue_labels) {
   try {
@@ -117036,7 +117036,7 @@ async function findIssueByTitle(context, owner, repo, issue_title, issue_labels)
 * @param {*} issue_title 
 * @param {*} issue_body 
 * @param {*} issue_labels 
-* @returns 
+* @returns {Object} The issue object that was created or found
 */
 async function createIssue(context, owner, repo, issue_title, issue_body, issue_labels) {
   try {
@@ -117220,10 +117220,21 @@ Please review the changes and update the code bindings accordingly.
 Cheers! 🎉
 `;
 
-      const { issue } = createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
-      context.log.info(`Issue created: ${issue.number}`);
-      const { branch } = createBranch(context, repository.owner.login, repository.name, "main", "update-clic-" + releaseTag);
-      context.log.info(`Branch created: ${branch.name}`);
+      const { issueResult } = createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
+      if (issueResult && issueResult.issue) {
+        const { issue } = issueResult;
+        context.log.info(`Issue created: ${issue.number}`);
+      } else {
+        context.log.error(`Failed to create issue or issue is undefined: ${issueResult}`);
+      }
+      const { branchResult } = createBranch(context, repository.owner.login, repository.name, "main", "update-clic-" + releaseTag);
+      if (branchResult && branchResult.branch) {
+        const { branch } = branchResult;
+        context.log.info(`Branch created: ${branch.name}`);
+      }
+      else {
+        context.log.error(`Failed to create branch or branch is undefined: ${branchResult}`);
+      }
       updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
       context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
 
@@ -117242,8 +117253,14 @@ Cheers! 🎉
       
       closes #${issue.number}
       `;
-      const { pr } = createPullRequest(context, repository.owner.login, repository.name, branch.name, "main", title, pr_body);
-      context.log.info(`Pull Request created: ${pr}`);
+      const { prResult } = createPullRequest(context, repository.owner.login, repository.name, branch.name, "main", title, pr_body);
+      if (prResult && prResult.pr) {
+        const { pr } = prResult;
+        context.log.info(`Pull Request created: ${pr.number}`);
+      }
+      else {
+        context.log.error(`Failed to create pull request or pull request is undefined: ${prResult}`);
+      }
     });
   
 
