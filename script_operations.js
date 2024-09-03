@@ -1,5 +1,8 @@
-const path = require('path');
-const execPromise = require('util').promisify(require('child_process').exec);
+import path from 'path';
+import { promisify } from 'util';
+import { exec } from 'child_process';
+
+const execPromise = promisify(exec);
 
 async function updateBindings(context, owner, repo, branch_name, tag, scriptName) {
   const { data: gencle_data } = await context.github.repos.get({
