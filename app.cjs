@@ -235,20 +235,6 @@ A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available.
 Please review the changes and update the code bindings accordingly.
 Cheers! 🎉
 `;
-      const pr_body = `
-## Release Update: ${releaseTag}
-
-A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
-
-### Info:
-**Release Tag:** ${releaseTag}
-**Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
-
-Please review the changes and update the code bindings accordingly.
-Cheers! 🎉
-
-closes #${issue.number}
-`;
 
       const { issue } = createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
       context.log.info(`Issue created: ${issue.html_url}`);
@@ -256,6 +242,22 @@ closes #${issue.number}
       context.log.info(`Branch created: ${branch.name}`);
       updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
       context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
+
+
+      const pr_body = `
+      ## Release Update: ${releaseTag}
+      
+      A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
+      
+      ### Info:
+      **Release Tag:** ${releaseTag}
+      **Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
+      
+      Please review the changes and update the code bindings accordingly.
+      Cheers! 🎉
+      
+      closes #${issue.number}
+      `;
       const { pr } = createPullRequest(context, repository.owner.login, repository.name, branch.name, "main", title, pr_body);
       context.log.info(`Pull Request created: ${pr.html_url}`);
     });
