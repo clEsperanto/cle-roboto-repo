@@ -165,11 +165,4 @@ async function createPullRequest(context, owner, repo, branch_name, pr_title, pr
     }
 }
 
-module.exports = {
-    findIssueByTitle,
-    createIssue,
-    findBranchByName,
-    createBranch,
-    findPullRequest,
-    createPullRequest
-};
+export { findIssueByTitle, createIssue, findBranchByName, createBranch, findPullRequest, createPullRequest};

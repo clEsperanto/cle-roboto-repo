@@ -31,6 +31,4 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
   await execPromise(`rm -rf ${repo_dir}`);
 }
 
-module.exports = {
-    updateBindings
-};  
+export = { updateBindings };  
