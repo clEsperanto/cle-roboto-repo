@@ -2,7 +2,7 @@
   "name": "cle-roboto",
   "version": "1.0.0",
   "private": true,
-  "description": "A Probot app which update the clesperanto bindings, and may do some more stuff in future.",
+  "description": "A Probot app for the github organisation clEsperanto.",
   "author": "Stephane Rigaud (https://x.com/strigaud)",
   "license": "ISC",
   "homepage": "github:clEsperanto/cle-roboto-app",
@@ -12,16 +12,15 @@
     "clesperanto"
   ],
   "scripts": {
-    "start": "probot run ./index.js",
+    "build": "ncc build index.js -o dist",
     "test": "node --test"
   },
   "dependencies": {
-    "@probot/adapter-aws-lambda-serverless": "^4.0.0",
     "@probot/adapter-github-actions": "^4.0.0"
   },
   "devDependencies": {
     "@semantic-release/git": "^10.0.1",
-    "esbuild": "^0.20.1",
+    "@vercel/ncc": "^0.34.0",
     "nock": "^14.0.0-beta.5",
     "semantic-release": "^23.0.0"
   },

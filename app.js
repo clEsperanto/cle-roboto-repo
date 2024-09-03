@@ -10,11 +10,12 @@ export default (app) => {
     app.on("issues.opened", async (context) => {
       const user = context.payload.issue.user.login;
       const issueComment = context.issue({
-        body: "Hello @" + user + "! Thanks for opening this issue.",
+        body: "Hello @" + user + "! Thanks for opening this issue. We will get back to you asap.",
       });
   
       return context.octokit.issues.createComment(issueComment);
     });
+    
   
     app.on("repository_dispatch", async (context) => {
       context.log.info("repository_dispatch event received");
@@ -26,6 +27,7 @@ export default (app) => {
       // Handle the repository_dispatch event with releaseTag
     });
   
+
     app.on("workflow_dispatch", async (context) => {
       context.log.info("workflow_dispatch event received");
   
