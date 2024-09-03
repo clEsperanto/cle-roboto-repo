@@ -1,7 +1,6 @@
-import path from 'path';
-import { promisify } from 'util';
-import { exec } from 'child_process';
-
+const path = require('path');
+const { promisify } = require('util');
+const { exec } = require('child_process');
 const execPromise = promisify(exec);
 
 async function updateBindings(context, owner, repo, branch_name, tag, scriptName) {
@@ -202,7 +201,7 @@ async function createPullRequest(context, owner, repo, branch_name, pr_title, pr
  * This is the main entrypoint to your Probot app
  * @param {import('probot').Probot} app
  */
-export default (app) => {
+module.exports = (app) => {
     // Your code here
     app.log.info("Yay, the app was loaded!");
   
@@ -220,7 +219,8 @@ export default (app) => {
     app.on("repository_dispatch", async (context) => { 
       const { action, repository, client_payload } = context.payload;
       const releaseTag = client_payload.release_tag;
-      context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag}, from repository: ${repository.full_name}`);
+      context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag}`);
+      context.log.info(`owner: ${repository.owner.login}, repo: ${repository.name}`);
 
       const title = "Update to CLIc@" + releaseTag;
       const issue_body = `

@@ -1,6 +1,6 @@
 // index.js
-import { run } from "@probot/adapter-github-actions";
-import app from "./app.js";
+const { run } = require("@probot/adapter-github-actions");
+const app = require("./app.js");
 
 run(app).catch((error) => {
   console.error(error);
