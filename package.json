@@ -12,7 +12,7 @@
     "clesperanto"
   ],
   "scripts": {
-    "build": "ncc build index.js -o dist",
+    "build": "ncc build index.cjs -o dist",
     "test": "node --test"
   },
   "dependencies": {
