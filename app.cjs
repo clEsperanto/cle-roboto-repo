@@ -257,7 +257,7 @@ Cheers! 🎉
 `;
 
       const { issue } = createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
-      context.log.info(`Issue created: ${issue.html_url}`);
+      context.log.info(`Issue created: ${issue.number}`);
       const { branch } = createBranch(context, repository.owner.login, repository.name, "main", "update-clic-" + releaseTag);
       context.log.info(`Branch created: ${branch.name}`);
       updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
@@ -279,7 +279,7 @@ Cheers! 🎉
       closes #${issue.number}
       `;
       const { pr } = createPullRequest(context, repository.owner.login, repository.name, branch.name, "main", title, pr_body);
-      context.log.info(`Pull Request created: ${pr.html_url}`);
+      context.log.info(`Pull Request created: ${pr}`);
     });
   
 
