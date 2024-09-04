@@ -117106,7 +117106,7 @@ async function findBranchByName(context, owner, repo, branch_name) {
 async function createBranch(context, owner, repo, branch_name) {
   try {
       let _branch = await findBranchByName(context, owner, repo, branch_name);
-      if (!_branch) {
+      if (_branch === undefined) {
           const { data: main_branch } = await context.octokit.repos.getBranch({
               owner,
               repo,
@@ -117164,7 +117164,7 @@ async function findPullRequest(context, owner, repo, branch_name, pr_title) {
 async function createPullRequest(context, owner, repo, branch_name, pr_title, pr_body) {
   try {
     let _pr = await findPullRequest(context, owner, repo, branch_name, pr_title);
-    if (!_pr) {
+    if (_pr === undefined) {
         _pr = (await context.octokit.pulls.create({
             owner,
             repo,
