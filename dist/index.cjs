@@ -117041,7 +117041,8 @@ async function findIssueByTitle(context, owner, repo, issue_title, issue_labels)
 async function createIssue(context, owner, repo, issue_title, issue_body, issue_labels) {
   try {
       let _issue = await findIssueByTitle(context, owner, repo, issue_title, issue_labels);
-      if (!_issue) {
+      if (_issue === undefined) {
+          context.log.info("No issue found, creating a new one");
           _issue = (await context.octokit.issues.create({
               owner,
               repo,
@@ -117050,6 +117051,7 @@ async function createIssue(context, owner, repo, issue_title, issue_body, issue_
               labels: issue_labels,
           })).data;
       } else if (_issue.state === "closed") {
+          context.log.info("Issue found but close, reopenning it");
           await context.octokit.issues.update({
               owner,
               repo,
@@ -117062,6 +117064,9 @@ async function createIssue(context, owner, repo, issue_title, issue_body, issue_
               issue_number: _issue.number,
               body: issue_body,
           });
+      }
+      if (_issue === undefined) {
+        context.log.error("Still failed to get an issue to return: ", _issue);
       }
       return _issue;
   } catch (error) {
@@ -117223,44 +117228,44 @@ Cheers! 🎉
       const { issueResult } = createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
       if (issueResult && issueResult.issue) {
         const { issue } = issueResult;
-        context.log.info(`Issue created: ${issue.number}`);
+        context.log.info(`Issue #${issue.number} : ${issue.html_url}`);
       } else {
         context.log.error(`Failed to create issue or issue is undefined: ${issueResult}`);
       }
-      const { branchResult } = createBranch(context, repository.owner.login, repository.name, "main", "update-clic-" + releaseTag);
-      if (branchResult && branchResult.branch) {
-        const { branch } = branchResult;
-        context.log.info(`Branch created: ${branch.name}`);
-      }
-      else {
-        context.log.error(`Failed to create branch or branch is undefined: ${branchResult}`);
-      }
-      updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
-      context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
+      // const { branchResult } = createBranch(context, repository.owner.login, repository.name, "main", "update-clic-" + releaseTag);
+      // if (branchResult && branchResult.branch) {
+      //   const { branch } = branchResult;
+      //   context.log.info(`Branch created: ${branch.name}`);
+      // }
+      // else {
+      //   context.log.error(`Failed to create branch or branch is undefined: ${branchResult}`);
+      // }
+      // updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
+      // context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
 
 
-      const pr_body = `
-      ## Release Update: ${releaseTag}
+      // const pr_body = `
+      // ## Release Update: ${releaseTag}
       
-      A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
+      // A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
       
-      ### Info:
-      **Release Tag:** ${releaseTag}
-      **Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
+      // ### Info:
+      // **Release Tag:** ${releaseTag}
+      // **Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
       
-      Please review the changes and update the code bindings accordingly.
-      Cheers! 🎉
+      // Please review the changes and update the code bindings accordingly.
+      // Cheers! 🎉
       
-      closes #${issue.number}
-      `;
-      const { prResult } = createPullRequest(context, repository.owner.login, repository.name, branch.name, "main", title, pr_body);
-      if (prResult && prResult.pr) {
-        const { pr } = prResult;
-        context.log.info(`Pull Request created: ${pr.number}`);
-      }
-      else {
-        context.log.error(`Failed to create pull request or pull request is undefined: ${prResult}`);
-      }
+      // closes #${issue.number}
+      // `;
+      // const { prResult } = createPullRequest(context, repository.owner.login, repository.name, branch.name, "main", title, pr_body);
+      // if (prResult && prResult.pr) {
+      //   const { pr } = prResult;
+      //   context.log.info(`Pull Request created: ${pr.number}`);
+      // }
+      // else {
+      //   context.log.error(`Failed to create pull request or pull request is undefined: ${prResult}`);
+      // }
     });
   
 
