@@ -3,10 +3,22 @@ const { promisify } = require('util');
 const { exec } = require('child_process');
 const execPromise = promisify(exec);
 
+/**
+ * Helper function to update the code of the bindings of a repository
+ * 
+ * @param {*} context 
+ * @param {*} owner 
+ * @param {*} repo 
+ * @param {*} branch_name 
+ * @param {*} tag 
+ * @param {*} scriptName 
+ * @returns {Promise<void>}
+ */
 async function updateBindings(context, owner, repo, branch_name, tag, scriptName) {
+  context.log.info(`Updating bindings of ${owner}-${repo} to ${tag} using ${scriptName} on branch ${branch_name}`);
   try {
     const { data: gencle_data } = await context.github.repos.get({
-      owner,
+      owner: 'clEsperanto',
       repo: 'gencle',
     });
     const gencle_dir = path.join('/tmp', 'gencle');
@@ -17,8 +29,11 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
     });
     const repo_dir = path.join('/tmp', repo);
     await execPromise(`git clone ${repo_data.clone_url} ${repo_dir}`);
+
+    console.log(`gencle_dir: ${gencle_dir}`);
+    console.log(`repo_dir: ${repo_dir}`);
+
     await execPromise(`cd ${repo_dir} && git fetch && git checkout ${branch_name}`);
-    // await execPromise(`pip3 install requests`);
     await execPromise(`python3 ${gencle_dir}/update_scripts/${scriptName} ${repo_dir} ${tag}`);
     const { stdout: diff } = await execPromise(`cd ${repo_dir} && git diff`);
     if (diff) {
@@ -33,6 +48,7 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
     console.error("Error updating bindings:", error);
     throw error;
   }
+  return;
 }
 
 /**
@@ -272,37 +288,37 @@ Cheers! 🎉
       }
       try {
         const branch = await createBranch(context, repository.owner.login, repository.name, "update-clic-" + releaseTag);
-        console.log(`Branch created or updated ${branch.title}`);
+        console.log(`Branch created or updated ${branch.name}: ${branch}`);
       } catch (error) {
         console.error('Failed to create or update branch:', error);
       }
       try {
-      await updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
-      context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
+        await updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
+        context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
       } catch (error) {
         console.error('Failed to update bindings:', error);
       }
 
-      const pr_body = `
-      ## Release Update: ${releaseTag}
+      // const pr_body = `
+      // ## Release Update: ${releaseTag}
       
-      A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
+      // A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
       
-      ### Info:
-      **Release Tag:** ${releaseTag}
-      **Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
+      // ### Info:
+      // **Release Tag:** ${releaseTag}
+      // **Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
       
-      Please review the changes and update the code bindings accordingly.
-      Cheers! 🎉
+      // Please review the changes and update the code bindings accordingly.
+      // Cheers! 🎉
       
-      closes #${issue.number}
-      `;
-      try {
-      const pr = await createPullRequest(context, repository.owner.login, repository.name, branch.name, title, pr_body);
-      context.log.info(`Pull Request created: ${pr.number}: ${pr.html_url}`);
-      } catch (error) {
-        console.error('Failed to create pull request:', error);
-      }
+      // closes #${issue.number}
+      // `;
+      // try {
+      // const pr = await createPullRequest(context, repository.owner.login, repository.name, branch.name, title, pr_body);
+      // context.log.info(`Pull Request created: ${pr.number}: ${pr.html_url}`);
+      // } catch (error) {
+      //   console.error('Failed to create pull request:', error);
+      // }
     });
   
 
