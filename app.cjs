@@ -251,32 +251,16 @@ async function createPullRequest(context, owner, repo, branch_name, pr_title, pr
 }
 
 /**
- * This is the main entrypoint to your Probot app
- * @param {import('probot').Probot} app
+ * Helper function to handle a binding update PR
+ * 
+ * @param {*} context 
+ * @param {*} repository 
+ * @param {*} releaseTag 
+ * @param {*} scriptName 
  */
-module.exports = (app) => {
-    // Your code here
-    app.log.info("Yay, the app was loaded!");
-  
-    // when an issue is opened, greet the author
-    app.on("issues.opened", async (context) => {
-      const user = context.payload.issue.user.login;
-      const issueComment = context.issue({
-        body: "Hello @" + user + "! Thanks for opening this issue. We will get back to you asap.",
-      });
-  
-      return context.octokit.issues.createComment(issueComment);
-    });
-    
-  
-    app.on("repository_dispatch", async (context) => { 
-      const { action, repository, client_payload } = context.payload;
-      const releaseTag = client_payload.release_tag;
-      context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag}`);
-      context.log.info(`owner: ${repository.owner.login}, repo: ${repository.name}`);
-
-      const title = "Update to CLIc@" + releaseTag;
-      const issue_body = `
+async function handleBindingsUpdate(context, repository, releaseTag, scriptName) {
+  const title = "Update to CLIc@" + releaseTag;
+  const issue_body = `
 ## Release Update: ${releaseTag}
 
 A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
@@ -289,17 +273,16 @@ Please review the changes and update the code bindings accordingly.
 Cheers! :robot:
 `;
 
-        const issue = await createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
-        console.log(`Issue created or updated ${issue.number}: ${issue.html_url}`);
+  const issue = await createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
+  console.log(`Issue created or updated ${issue.number}: ${issue.html_url}`);
 
-        const branch = await createBranch(context, repository.owner.login, repository.name, "update-clic-" + releaseTag);
-        console.log(`Branch created or updated ${branch.name}:`, branch);
+  const branch = await createBranch(context, repository.owner.login, repository.name, "update-clic-" + releaseTag);
+  console.log(`Branch created or updated ${branch.name}:`, branch);
 
-        await updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
-        context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
+  await updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, scriptName);
+  context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
 
-
-      const pr_body = `
+  const pr_body = `
 ## Release Update: ${releaseTag}
 
 A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
@@ -312,20 +295,50 @@ Please review the changes and update the code bindings accordingly.
 Cheers! :robot:
 
 closes #${issue.number}
-      `;
-      const pr = await createPullRequest(context, repository.owner.login, repository.name, branch.name, title, pr_body);
-      context.log.info(`Pull Request created: ${pr.number}: ${pr.html_url}`);
+  `;
+  const pr = await createPullRequest(context, repository.owner.login, repository.name, branch.name, title, pr_body);
+  context.log.info(`Pull Request created: ${pr.number}: ${pr.html_url}`);
+}
+
+/**
+ * This is the main entrypoint to your Probot app
+ * @param {import('probot').Probot} app
+ */
+module.exports = (app) => {
+    app.log.info("cle-RoBoTo is loaded!");
+  
+    // when an issue is opened, greet the author
+    app.on("issues.opened", async (context) => {
+      const user = context.payload.issue.user.login;
+      const issueComment = context.issue({
+        body: "Hello @" + user + "! Thanks for opening this issue. We will get back to you asap.",
+      });
+  
+      return context.octokit.issues.createComment(issueComment);
+    });
+    
+    // dispatch event from CLIc release workflow
+    app.on("repository_dispatch", async (context) => { 
+      const { action, repository, client_payload } = context.payload;
+      const releaseTag = client_payload.release_tag; // should be a string
+      context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag}`);
+      context.log.info(`owner: ${repository.owner.login}, repo: ${repository.name}`);
+
+      if (action === "update-clic") {
+        await handleBindingsUpdate(context, repository, releaseTag, "pyclesperanto_auto_update.py");
+      }
     });
   
-
-    app.on("workflow_dispatch", async (context) => {
-      context.log.info("workflow_dispatch event received");
-  
-      const { inputs } = context.payload;
-      const releaseTag = inputs.release_tag; // should be a string
-  
-      context.log.info(`workflow_dispatch manually triggered with release_tag: ${releaseTag}`);
-      // Handle the workflow_dispatch event with releaseTag
+    // dispatch event from manual workflow behing triggered
+    // must contain a release_tag as input (can be a branch name)
+    app.on("workflow_dispatch", async (context) => {  
+      const { inputs, repository } = context.payload;
+      // check if inputs contains release_tag
+      if (inputs.release_tag) {
+        context.log.info(`workflow_dispatch manually triggered with release_tag: ${inputs.release_tag}`);
+        context.log.info(`owner: ${repository.owner.login}, repo: ${repository.name}`);
+        await handleBindingsUpdate(context, repository, releaseTag, "pyclesperanto_auto_update.py");
+      }
     });
   
   

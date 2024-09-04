@@ -1,33 +1,24 @@
-# roboto
+# cle-roboto 
 
-> A GitHub App built with [Probot](https://github.com/probot/probot) that A Probot app
+This is a GitHub Action build up from [Probot](https://github.com/probot/probot) :robot:.
+This action can be used in clEsperanto repository for automation. 
+It currently covers code update for `pyclesperanto` and `clesperantoJ` when a new `CLIc` version is released.
+More functionalities will come later if needed.
+
 
 ## Setup
 
-```sh
-# Install dependencies
-npm install
-
-# Run the bot
-npm start
+In a `clEsperanto` repository, add a workflow file with the step:
+```
+- uses: clEsperanto/cle-roboto-repo@v1
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-## Docker
+> [!CAUTION]
+> It may be required to setup a python and install the package `requests` for correct usage.
 
-```sh
-# 1. Build container
-docker build -t roboto .
 
-# 2. Start container
-docker run -e APP_ID=<app-id> -e PRIVATE_KEY=<pem-value> roboto
-```
+## Call for help
 
-## Contributing
-
-If you have suggestions for how roboto could be improved, or want to report a bug, open an issue! We'd love all and any contributions.
-
-For more, check out the [Contributing Guide](CONTRIBUTING.md).
-
-## License
-
-[ISC](LICENSE) © 2024 Stephane Rigaud
+This would benefit from behing a proper `bot` though it would require deploying it on a server. More info in the [Probot Doc](https://probot.github.io/docs/deployment/). Help is welcomee for this task.
