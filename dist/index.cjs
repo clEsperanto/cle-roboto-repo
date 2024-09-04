@@ -116999,9 +116999,12 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
   console.log(`repo_dir: ${repo_dir}`);
 
   await execPromise(`cd ${repo_dir} && git fetch && git checkout ${branch_name}`);
-  await execPromise(`python3 ${gencle_dir}/update_scripts/${scriptName} ${repo_dir} ${tag}`);
+  const { stdout: py_stdout } = await execPromise(`python ${gencle_dir}/update_scripts/${scriptName} ${repo_dir} ${tag}`);
+  console.log(py_stdout);
+
   const { stdout: diff } = await execPromise(`cd ${repo_dir} && git diff`);
-  
+  console.log(diff);
+
   if (diff) {
     await execPromise(`cd ${repo_dir} && git add . && git commit -m "Update to ${tag}" && git push`);
   } else {
