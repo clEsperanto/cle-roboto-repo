@@ -261,7 +261,7 @@ Please review the changes and update the code bindings accordingly.
 Cheers! 🎉
 `;
       try {
-        const issue = createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
+        const issue = await createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
         console.log(`Issue created or updated ${issue.number}: ${issue}`);
       } catch (error) {
         console.error('Failed to create or update issue:', error);
