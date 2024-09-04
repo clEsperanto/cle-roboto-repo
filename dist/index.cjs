@@ -117010,7 +117010,7 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
       cd ${repo_dir} && \
       git add . && \
       git commit -m "Update to ${tag}" && \
-      git push
+      git push https://github-actions[bot]:${process.env.GITHUB_TOKEN}@github.com/${owner}/${repo}.git ${branch_name}
     `);
   } else {
     console.log("No changes made by the update script");
