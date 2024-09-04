@@ -116980,6 +116980,8 @@ const execPromise = promisify(exec);
  */
 async function updateBindings(context, owner, repo, branch_name, tag, scriptName) {
   context.log.info(`Updating bindings of ${owner}-${repo} to ${tag} using ${scriptName} on branch ${branch_name}`);
+  await execPromise(`git config --global user.name "github-actions[bot]"`);
+  await execPromise(`git config --global user.email "github-actions[bot]@users.noreply.github.com"`); 
 
   const { data: gencle_data } = await context.octokit.repos.get({
     owner: 'clEsperanto',
@@ -117003,8 +117005,6 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
   console.log(py_stdout);
 
   const { stdout: diff } = await execPromise(`cd ${repo_dir} && git status --porcelain`);
-  console.log(diff);
-
   if (diff) {
     console.log('There are changes:', diff);
     await execPromise(`cd ${repo_dir} && git add . && git commit -m "Update to ${tag}" && git push`);
@@ -117257,26 +117257,22 @@ Cheers! 🎉
         context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
 
 
-      // const pr_body = `
-      // ## Release Update: ${releaseTag}
+      const pr_body = `
+      ## Release Update: ${releaseTag}
       
-      // A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
+      A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
       
-      // ### Info:
-      // **Release Tag:** ${releaseTag}
-      // **Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
+      ### Info:
+      **Release Tag:** ${releaseTag}
+      **Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
       
-      // Please review the changes and update the code bindings accordingly.
-      // Cheers! 🎉
+      Please review the changes and update the code bindings accordingly.
+      Cheers! 🎉
       
-      // closes #${issue.number}
-      // `;
-      // try {
-      // const pr = await createPullRequest(context, repository.owner.login, repository.name, branch.name, title, pr_body);
-      // context.log.info(`Pull Request created: ${pr.number}: ${pr.html_url}`);
-      // } catch (error) {
-      //   console.error('Failed to create pull request:', error);
-      // }
+      closes #${issue.number}
+      `;
+      const pr = await createPullRequest(context, repository.owner.login, repository.name, branch.name, title, pr_body);
+      context.log.info(`Pull Request created: ${pr.number}: ${pr.html_url}`);
     });
   
 
