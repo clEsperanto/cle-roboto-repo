@@ -15,7 +15,7 @@ const execPromise = promisify(exec);
  * @returns {Promise<void>}
  */
 async function updateBindings(context, owner, repo, branch, tag, scriptName) {
-  context.log.info(`Updating bindings of ${owner}-${repo} to ${tag} using ${scriptName} on branch ${branch.ref}`);
+  context.log.info(`Updating bindings of ${owner}-${repo} to ${tag} using ${scriptName} on branch ${branch.name}`);
   try {
     const { data: gencle_data } = await context.github.repos.get({
       owner: 'clEsperanto',
@@ -33,7 +33,7 @@ async function updateBindings(context, owner, repo, branch, tag, scriptName) {
     console.log(`gencle_dir: ${gencle_dir}`);
     console.log(`repo_dir: ${repo_dir}`);
 
-    await execPromise(`cd ${repo_dir} && git fetch && git checkout ${branch.ref.split('/').pop()}`);
+    await execPromise(`cd ${repo_dir} && git fetch && git checkout ${branch.name}`);
     await execPromise(`python3 ${gencle_dir}/update_scripts/${scriptName} ${repo_dir} ${tag}`);
     const { stdout: diff } = await execPromise(`cd ${repo_dir} && git diff`);
     if (diff) {
@@ -177,7 +177,6 @@ async function createBranch(context, owner, repo, branch_name) {
       if (_branch === undefined) {
           throw new Error("We are about to return an undefined branch");
       }
-      console.log(`Branch  object:` , _branch);
       return _branch;
   } catch (error) {
       console.error("Error creating branch:", error);
@@ -293,33 +292,33 @@ Cheers! 🎉
       } catch (error) {
         console.error('Failed to create or update branch:', error);
       }
-      // try {
-      //   await updateBindings(context, repository.owner.login, repository.name, branch, releaseTag, "pyclesperanto_auto_update.py");
-      //   context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
-      // } catch (error) {
-      //   console.error('Failed to update bindings:', error);
-      // }
+      try {
+        await updateBindings(context, repository.owner.login, repository.name, branch, releaseTag, "pyclesperanto_auto_update.py");
+        context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
+      } catch (error) {
+        console.error('Failed to update bindings:', error);
+      }
 
-      // const pr_body = `
-      // ## Release Update: ${releaseTag}
+      const pr_body = `
+      ## Release Update: ${releaseTag}
       
-      // A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
+      A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
       
-      // ### Info:
-      // **Release Tag:** ${releaseTag}
-      // **Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
+      ### Info:
+      **Release Tag:** ${releaseTag}
+      **Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
       
-      // Please review the changes and update the code bindings accordingly.
-      // Cheers! 🎉
+      Please review the changes and update the code bindings accordingly.
+      Cheers! 🎉
       
-      // closes #${issue.number}
-      // `;
-      // try {
-      // const pr = await createPullRequest(context, repository.owner.login, repository.name, branch.name, title, pr_body);
-      // context.log.info(`Pull Request created: ${pr.number}: ${pr.html_url}`);
-      // } catch (error) {
-      //   console.error('Failed to create pull request:', error);
-      // }
+      closes #${issue.number}
+      `;
+      try {
+      const pr = await createPullRequest(context, repository.owner.login, repository.name, branch.name, title, pr_body);
+      context.log.info(`Pull Request created: ${pr.number}: ${pr.html_url}`);
+      } catch (error) {
+        console.error('Failed to create pull request:', error);
+      }
     });
   
 
