@@ -9,13 +9,13 @@ const execPromise = promisify(exec);
  * @param {*} context 
  * @param {*} owner 
  * @param {*} repo 
- * @param {*} branch_name 
+ * @param {*} branch 
  * @param {*} tag 
  * @param {*} scriptName 
  * @returns {Promise<void>}
  */
-async function updateBindings(context, owner, repo, branch_name, tag, scriptName) {
-  context.log.info(`Updating bindings of ${owner}-${repo} to ${tag} using ${scriptName} on branch ${branch_name}`);
+async function updateBindings(context, owner, repo, branch, tag, scriptName) {
+  context.log.info(`Updating bindings of ${owner}-${repo} to ${tag} using ${scriptName} on branch ${branch.ref}`);
   try {
     const { data: gencle_data } = await context.github.repos.get({
       owner: 'clEsperanto',
@@ -33,7 +33,7 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
     console.log(`gencle_dir: ${gencle_dir}`);
     console.log(`repo_dir: ${repo_dir}`);
 
-    await execPromise(`cd ${repo_dir} && git fetch && git checkout ${branch_name}`);
+    await execPromise(`cd ${repo_dir} && git fetch && git checkout ${branch.ref.split('/').pop()}`);
     await execPromise(`python3 ${gencle_dir}/update_scripts/${scriptName} ${repo_dir} ${tag}`);
     const { stdout: diff } = await execPromise(`cd ${repo_dir} && git diff`);
     if (diff) {
@@ -177,6 +177,7 @@ async function createBranch(context, owner, repo, branch_name) {
       if (_branch === undefined) {
           throw new Error("We are about to return an undefined branch");
       }
+      console.log(`Branch  object:` , _branch);
       return _branch;
   } catch (error) {
       console.error("Error creating branch:", error);
@@ -288,12 +289,12 @@ Cheers! 🎉
       }
       try {
         const branch = await createBranch(context, repository.owner.login, repository.name, "update-clic-" + releaseTag);
-        console.log(`Branch created or updated ${branch.name}: ${branch}`);
+        console.log(`Branch created or updated ${branch.ref}: ${branch}`);
       } catch (error) {
         console.error('Failed to create or update branch:', error);
       }
       try {
-        await updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
+        await updateBindings(context, repository.owner.login, repository.name, branch, releaseTag, "pyclesperanto_auto_update.py");
         context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
       } catch (error) {
         console.error('Failed to update bindings:', error);
