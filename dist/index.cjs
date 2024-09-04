@@ -117002,10 +117002,11 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
   const { stdout: py_stdout } = await execPromise(`python ${gencle_dir}/update_scripts/${scriptName} ${repo_dir} ${tag}`);
   console.log(py_stdout);
 
-  const { stdout: diff } = await execPromise(`cd ${repo_dir} && git diff`);
+  const { stdout: diff } = await execPromise(`cd ${repo_dir} && git status --porcelain`);
   console.log(diff);
 
   if (diff) {
+    console.log('There are changes:', diff);
     await execPromise(`cd ${repo_dir} && git add . && git commit -m "Update to ${tag}" && git push`);
   } else {
     console.log("No changes made by the update script");
