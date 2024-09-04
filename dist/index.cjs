@@ -116993,10 +116993,15 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
     });
     const repo_dir = path.join('/tmp', repo);
     await execPromise(`git clone ${repo_data.clone_url} ${repo_dir}`);
+  } catch (error) {
+    console.error("Error cloning repositories:", error);
+    throw error;
+  }
 
     console.log(`gencle_dir: ${gencle_dir}`);
     console.log(`repo_dir: ${repo_dir}`);
 
+  try {
     await execPromise(`cd ${repo_dir} && git fetch && git checkout ${branch_name}`);
     await execPromise(`python3 ${gencle_dir}/update_scripts/${scriptName} ${repo_dir} ${tag}`);
     const { stdout: diff } = await execPromise(`cd ${repo_dir} && git diff`);
@@ -117005,13 +117010,13 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
     } else {
       console.log("No changes made by the update script");
     }
-    // Clean up
-    await execPromise(`rm -rf ${gencle_dir}`);
-    await execPromise(`rm -rf ${repo_dir}`);
   } catch (error) {
     console.error("Error updating bindings:", error);
     throw error;
   }
+    // Clean up
+    await execPromise(`rm -rf ${gencle_dir}`);
+    await execPromise(`rm -rf ${repo_dir}`);
   return;
 }
 
@@ -117256,12 +117261,12 @@ Cheers! 🎉
       } catch (error) {
         console.error('Failed to create or update branch:', error);
       }
-      try {
+      // try {
         await updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
         context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
-      } catch (error) {
-        console.error('Failed to update bindings:', error);
-      }
+      // } catch (error) {
+      //   console.error('Failed to update bindings:', error);
+      // }
 
       // const pr_body = `
       // ## Release Update: ${releaseTag}
