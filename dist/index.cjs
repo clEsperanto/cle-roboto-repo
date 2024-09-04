@@ -117224,13 +117224,11 @@ A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available.
 Please review the changes and update the code bindings accordingly.
 Cheers! 🎉
 `;
-
-      const { issueResult } = createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
-      if (issueResult && issueResult.issue) {
-        const { issue } = issueResult;
-        context.log.info(`Issue #${issue.number} : ${issue.html_url}`);
-      } else {
-        context.log.error(`Failed to create issue or issue is undefined: ${issueResult}`);
+      try {
+        const issue = createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
+        console.log(`Issue created or updated ${issue.number}: ${issue}`);
+      } catch (error) {
+        console.error('Failed to create or update issue:', error);
       }
       // const { branchResult } = createBranch(context, repository.owner.login, repository.name, "main", "update-clic-" + releaseTag);
       // if (branchResult && branchResult.branch) {
