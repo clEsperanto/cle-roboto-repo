@@ -307,15 +307,16 @@ closes #${issue.number}
 module.exports = (app) => {
     app.log.info("cle-RoBoTo is loaded!");
   
+    // Removed for now because it's not needed
     // when an issue is opened, greet the author
-    app.on("issues.opened", async (context) => {
-      const user = context.payload.issue.user.login;
-      const issueComment = context.issue({
-        body: "Hello @" + user + "! Thanks for opening this issue. We will get back to you asap.",
-      });
-  
-      return context.octokit.issues.createComment(issueComment);
-    });
+    // app.on("issues.opened", async (context) => {
+    //   const user = context.payload.issue.user.login;
+    //   const issueComment = context.issue({
+    //     body: "Hello @" + user + "! Thanks for opening this issue. We will get back to you asap.",
+    //   });
+
+    //   return context.octokit.issues.createComment(issueComment);
+    // });
     
     // dispatch event from CLIc release workflow
     app.on("repository_dispatch", async (context) => { 
