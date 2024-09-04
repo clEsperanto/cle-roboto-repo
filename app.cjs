@@ -284,24 +284,16 @@ A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available.
 Please review the changes and update the code bindings accordingly.
 Cheers! 🎉
 `;
-      try {
+
         const issue = await createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
         console.log(`Issue created or updated ${issue.number}: ${issue.html_url}`);
-      } catch (error) {
-        console.error('Failed to create or update issue:', error);
-      }
-      try {
+
         const branch = await createBranch(context, repository.owner.login, repository.name, "update-clic-" + releaseTag);
         console.log(`Branch created or updated ${branch.name}:`, branch);
-      } catch (error) {
-        console.error('Failed to create or update branch:', error);
-      }
-      // try {
+
         await updateBindings(context, repository.owner.login, repository.name, branch.name, releaseTag, "pyclesperanto_auto_update.py");
         context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
-      // } catch (error) {
-      //   console.error('Failed to update bindings:', error);
-      // }
+
 
       // const pr_body = `
       // ## Release Update: ${releaseTag}
