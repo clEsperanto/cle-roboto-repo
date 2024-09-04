@@ -116980,9 +116980,6 @@ const execPromise = promisify(exec);
  */
 async function updateBindings(context, owner, repo, branch_name, tag, scriptName) {
   context.log.info(`Updating bindings of ${owner}-${repo} to ${tag} using ${scriptName} on branch ${branch_name}`);
-  await execPromise(`git config --global user.name "github-actions[bot]"`);
-  await execPromise(`git config --global user.email "github-actions[bot]@users.noreply.github.com"`); 
-
   const { data: gencle_data } = await context.octokit.repos.get({
     owner: 'clEsperanto',
     repo: 'gencle',
@@ -117007,7 +117004,14 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
   const { stdout: diff } = await execPromise(`cd ${repo_dir} && git status --porcelain`);
   if (diff) {
     console.log('There are changes:', diff);
-    await execPromise(`cd ${repo_dir} && git add . && git commit -m "Update to ${tag}" && git push`);
+    await execPromise(`
+      git config --global user.name "github-actions[bot]" && \
+      git config --global user.email "github-actions[bot]@users.noreply.github.com" && \
+      cd ${repo_dir} && \
+      git add . && \
+      git commit -m "Update to ${tag}" && \
+      git push
+    `);
   } else {
     console.log("No changes made by the update script");
   }
