@@ -325,7 +325,7 @@ module.exports = (app) => {
       context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag}`);
       context.log.info(`owner: ${repository.owner.login}, repo: ${repository.name}`);
 
-      if (action === "update-clic") {
+      if (action === "clic_update") {
         const scriptMapping = {
           "pyclesperanto": "pyclesperanto_auto_update.py",
           "clesperantoj": "clesperantoj_auto_update.py"
