@@ -117034,8 +117034,9 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
 async function findIssueByTitle(context, owner, repo, issue_title, issue_labels) {
   try {
     const { data: issues } = await context.octokit.issues.listForRepo({
-        owner,
-        repo,
+        owner: owner,
+        repo: repo,
+        state: "all",
         labels: issue_labels.join(","),
     });
     return issues.find((issue) => issue.title === issue_title);
@@ -117065,22 +117066,22 @@ async function createIssue(context, owner, repo, issue_title, issue_body, issue_
       let _issue = await findIssueByTitle(context, owner, repo, issue_title, issue_labels);
       if (_issue === undefined) {
           _issue = (await context.octokit.issues.create({
-              owner,
-              repo,
+              owner: owner,
+              repo: repo,
               title: issue_title,
               body: issue_body,
               labels: issue_labels,
           })).data;
       } else if (_issue.state === "closed") {
           await context.octokit.issues.update({
-              owner,
-              repo,
+              owner: owner,
+              repo: repo,
               issue_number: _issue.number,
               state: "open",
           });
           await context.octokit.issues.createComment({
-              owner,
-              repo,
+              owner: owner,
+              repo: repo,
               issue_number: _issue.number,
               body: issue_body,
           });
@@ -117107,8 +117108,8 @@ async function createIssue(context, owner, repo, issue_title, issue_body, issue_
 async function findBranchByName(context, owner, repo, branch_name) {
   try {
     const { data: branches } = await context.octokit.repos.listBranches({
-        owner,
-        repo,
+        owner: owner,
+        repo: repo,
     });
     return branches.find((branch) => branch.name === branch_name);
   } catch (error) {
@@ -117133,16 +117134,17 @@ async function createBranch(context, owner, repo, branch_name) {
       let _branch = await findBranchByName(context, owner, repo, branch_name);
       if (_branch === undefined) {
           const { data: main_branch } = await context.octokit.repos.getBranch({
-              owner,
-              repo,
+              owner: owner,
+              repo: repo,
               branch: "main",
           });
           _branch = (await context.octokit.git.createRef({
-              owner,
-              repo,
+              owner: owner,
+              repo: repo,
               ref: `refs/heads/${branch_name}`,
               sha: main_branch.commit.sha,
           })).data;
+          _branch.name = branch_name;
       }
       if (_branch === undefined) {
           throw new Error("We are about to return an undefined branch");
@@ -117167,8 +117169,8 @@ async function createBranch(context, owner, repo, branch_name) {
 async function findPullRequest(context, owner, repo, branch_name, pr_title) {
   try {
     const { data: pull_requests } = await context.octokit.pulls.list({
-        owner,
-        repo,
+        owner: owner,
+        repo: repo,
         state: "open",
     });
     return pull_requests.find((pr) => pr.head.ref === branch_name && pr.title === pr_title);
@@ -117194,8 +117196,8 @@ async function createPullRequest(context, owner, repo, branch_name, pr_title, pr
     let _pr = await findPullRequest(context, owner, repo, branch_name, pr_title);
     if (_pr === undefined) {
         _pr = (await context.octokit.pulls.create({
-            owner,
-            repo,
+            owner: owner,
+            repo: repo,
             title: pr_title,
             head: branch_name,
             base: "main",
@@ -117248,7 +117250,7 @@ A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available.
 **Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
 
 Please review the changes and update the code bindings accordingly.
-Cheers! 🎉
+Cheers! :robot:
 `;
 
         const issue = await createIssue(context, repository.owner.login, repository.name, title, issue_body, ["auto-update"]);
@@ -117262,18 +117264,18 @@ Cheers! 🎉
 
 
       const pr_body = `
-      ## Release Update: ${releaseTag}
-      
-      A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
-      
-      ### Info:
-      **Release Tag:** ${releaseTag}
-      **Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
-      
-      Please review the changes and update the code bindings accordingly.
-      Cheers! 🎉
-      
-      closes #${issue.number}
+## Release Update: ${releaseTag}
+
+A new release of [CLIc](https://github.com/clEsperanto/CLIc) is available. 
+
+### Info:
+**Release Tag:** ${releaseTag}
+**Release Notes:** [Release Notes](https://github.com/clEsperanto/CLIc/releases/tag/${releaseTag})
+
+Please review the changes and update the code bindings accordingly.
+Cheers! :robot:
+
+closes #${issue.number}
       `;
       const pr = await createPullRequest(context, repository.owner.login, repository.name, branch.name, title, pr_body);
       context.log.info(`Pull Request created: ${pr.number}: ${pr.html_url}`);
