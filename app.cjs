@@ -289,16 +289,16 @@ Cheers! 🎉
       }
       try {
         const branch = await createBranch(context, repository.owner.login, repository.name, "update-clic-" + releaseTag);
-        console.log(`Branch created or updated ${branch.ref}: ${branch}`);
+        console.log(`Branch created or updated ${branch.name}:`, branch);
       } catch (error) {
         console.error('Failed to create or update branch:', error);
       }
-      try {
-        await updateBindings(context, repository.owner.login, repository.name, branch, releaseTag, "pyclesperanto_auto_update.py");
-        context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
-      } catch (error) {
-        console.error('Failed to update bindings:', error);
-      }
+      // try {
+      //   await updateBindings(context, repository.owner.login, repository.name, branch, releaseTag, "pyclesperanto_auto_update.py");
+      //   context.log.info(`Bindings of ${repository.name} updated for CLIc release: ${releaseTag}`);
+      // } catch (error) {
+      //   console.error('Failed to update bindings:', error);
+      // }
 
       // const pr_body = `
       // ## Release Update: ${releaseTag}
