@@ -17,13 +17,13 @@ const execPromise = promisify(exec);
 async function updateBindings(context, owner, repo, branch_name, tag, scriptName) {
   context.log.info(`Updating bindings of ${owner}-${repo} to ${tag} using ${scriptName} on branch ${branch_name}`);
   try {
-    const { data: gencle_data } = await context.github.repos.get({
+    const { data: gencle_data } = await context.octokit.repos.get({
       owner: 'clEsperanto',
       repo: 'gencle',
     });
     const gencle_dir = path.join('/tmp', 'gencle');
     await execPromise(`git clone ${gencle_data.clone_url} ${gencle_dir}`);
-    const { data: repo_data } = await context.github.repos.get({
+    const { data: repo_data } = await context.octokit.repos.get({
       owner,
       repo,
     });
