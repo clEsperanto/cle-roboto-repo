@@ -99,6 +99,9 @@ async function createIssue(context, owner, repo, issue_title, issue_body, issue_
               body: issue_body,
           });
       }
+      if (_issue === undefined) {
+          throw new Error("We are about to return an undefined issue");
+      }
       return _issue;
   } catch (error) {
       console.error("Error creating or updating issue:", error);
@@ -113,7 +116,7 @@ async function createIssue(context, owner, repo, issue_title, issue_body, issue_
 * @param {*} owner 
 * @param {*} repo 
 * @param {*} branch_name 
-* @returns 
+* @returns {Object|undefined} The branch object if found, otherwise undefined
 */
 async function findBranchByName(context, owner, repo, branch_name) {
   try {
@@ -137,7 +140,7 @@ async function findBranchByName(context, owner, repo, branch_name) {
 * @param {*} owner 
 * @param {*} repo 
 * @param {*} branch_name 
-* @returns 
+* @returns {Object} The branch object that was created or found
 */
 async function createBranch(context, owner, repo, branch_name) {
   try {
@@ -155,6 +158,9 @@ async function createBranch(context, owner, repo, branch_name) {
               sha: main_branch.commit.sha,
           })).data;
       }
+      if (_branch === undefined) {
+          throw new Error("We are about to return an undefined branch");
+      }
       return _branch;
   } catch (error) {
       console.error("Error creating branch:", error);
@@ -170,7 +176,7 @@ async function createBranch(context, owner, repo, branch_name) {
 * @param {*} repo 
 * @param {*} branch_name 
 * @param {*} pr_title 
-* @returns 
+* @returns {Object|undefined} The pull request object if found, otherwise undefined
 */
 async function findPullRequest(context, owner, repo, branch_name, pr_title) {
   try {
@@ -195,7 +201,7 @@ async function findPullRequest(context, owner, repo, branch_name, pr_title) {
 * @param {*} branch_name 
 * @param {*} pr_title 
 * @param {*} pr_body 
-* @returns 
+* @returns {Object} The pull request object that was created or found
 */
 async function createPullRequest(context, owner, repo, branch_name, pr_title, pr_body) {
   try {
@@ -209,6 +215,9 @@ async function createPullRequest(context, owner, repo, branch_name, pr_title, pr
             base: "main",
             body: pr_body,
         })).data;
+    }
+    if (_pr === undefined) {
+        throw new Error("We are about to return an undefined pull request");
     }
     return _pr;
   } catch (error) {
@@ -262,7 +271,7 @@ Cheers! 🎉
         console.error('Failed to create or update issue:', error);
       }
       try {
-        const branch = await createBranch(context, repository.owner.login, repository.name, "main", "update-clic-" + releaseTag);
+        const branch = await createBranch(context, repository.owner.login, repository.name, "update-clic-" + releaseTag);
         console.log(`Branch created or updated ${branch.title}`);
       } catch (error) {
         console.error('Failed to create or update branch:', error);
@@ -289,7 +298,7 @@ Cheers! 🎉
       closes #${issue.number}
       `;
       try {
-      const pr = await createPullRequest(context, repository.owner.login, repository.name, branch.name, "main", title, pr_body);
+      const pr = await createPullRequest(context, repository.owner.login, repository.name, branch.name, title, pr_body);
       context.log.info(`Pull Request created: ${pr.number}: ${pr.html_url}`);
       } catch (error) {
         console.error('Failed to create pull request:', error);
