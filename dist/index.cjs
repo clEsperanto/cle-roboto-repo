@@ -117285,22 +117285,22 @@ module.exports = (app) => {
     // dispatch event from CLIc release workflow
     app.on("repository_dispatch", async (context) => { 
       const { action, repository, client_payload } = context.payload;
-      const releaseTag = client_payload.release_tag;
-      context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag}`);
       
+      // handle the clic_update event dispatched by the CLIc release workflow
       if (action === "clic_update") {
         context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag} for ${repository.name}`);
-      }
-
-      const scriptMapping = {
-        "pyclesperanto": "pyclesperanto_auto_update.py",
-        "clesperantoj": "clesperantoj_auto_update.py"
-      };
-      const scriptName = scriptMapping[repository.name];
-      if (scriptName) {
-        await handleBindingsUpdate(context, repository, releaseTag, scriptName);
-      } else {
-        context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag} not handled for ${repository.name}`);
+        
+        const releaseTag = client_payload.release_tag;
+        const scriptMapping = {
+          "pyclesperanto": "pyclesperanto_auto_update.py",
+          "clesperantoj": "clesperantoj_auto_update.py"
+        };
+        const scriptName = scriptMapping[repository.name];
+        if (scriptName) {
+          await handleBindingsUpdate(context, repository, releaseTag, scriptName);
+        } else {
+          context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag} not handled for ${repository.name}`);
+        }
       }
     });
   
@@ -117308,9 +117308,7 @@ module.exports = (app) => {
     // must contain a release_tag as input (can be a branch name)
     app.on("workflow_dispatch", async (context) => {  
 
-      const { inputs, repository } = context.payload;
-      context.log.info('inputs:', inputs);
-      context.log.info('repository:', repository);
+      context.log.info('context:', context);
 
       
     });
