@@ -117285,45 +117285,34 @@ module.exports = (app) => {
     // dispatch event from CLIc release workflow
     app.on("repository_dispatch", async (context) => { 
       const { action, repository, client_payload } = context.payload;
-      const releaseTag = client_payload.release_tag; // should be a string
+      const releaseTag = client_payload.release_tag;
       context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag}`);
-      context.log.info(`owner: ${repository.owner.login}, repo: ${repository.name}`);
+      
+      if (action === "clic_update") {
+        context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag} for ${repository.name}`);
+      }
 
-      if (action === "update-clic") {
-        const scriptMapping = {
-          "pyclesperanto": "pyclesperanto_auto_update.py",
-          "clesperantoj": "clesperantoj_auto_update.py"
-        };
-        const scriptName = scriptMapping[repository.name];
-        if (scriptName) {
-          await handleBindingsUpdate(context, repository, releaseTag, scriptName);
-        } else {
-          context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag} not handled for ${repository.name}`);
-        }
+      const scriptMapping = {
+        "pyclesperanto": "pyclesperanto_auto_update.py",
+        "clesperantoj": "clesperantoj_auto_update.py"
+      };
+      const scriptName = scriptMapping[repository.name];
+      if (scriptName) {
+        await handleBindingsUpdate(context, repository, releaseTag, scriptName);
+      } else {
+        context.log.info(`repository_dispatch action: ${action}, release_tag: ${releaseTag} not handled for ${repository.name}`);
       }
     });
   
     // dispatch event from manual workflow behing triggered
     // must contain a release_tag as input (can be a branch name)
     app.on("workflow_dispatch", async (context) => {  
+
       const { inputs, repository } = context.payload;
-      // check if inputs contains release_tag
-      if (inputs.release_tag) {
-        context.log.info(`workflow_dispatch manually triggered with release_tag: ${inputs.release_tag}`);
-        context.log.info(`owner: ${repository.owner.login}, repo: ${repository.name}`);
-        const scriptMapping = {
-          "pyclesperanto": "pyclesperanto_auto_update.py",
-          "clesperantoj": "clesperantoj_auto_update.py"
-        };
-        const scriptName = scriptMapping[repository.name];
-        if (scriptName) {
-          await handleBindingsUpdate(context, repository, releaseTag, scriptName);
-        } else {
-          for (const repoName in scriptMapping) {
-            await handleBindingsUpdate(context, repository, releaseTag, scriptMapping[repoName]);
-          }
-        }     
-       }
+      context.log.info('inputs:', inputs);
+      context.log.info('repository:', repository);
+
+      
     });
   
   
