@@ -344,9 +344,7 @@ module.exports = (app) => {
     // must contain a release_tag as input (can be a branch name)
     app.on("workflow_dispatch", async (context) => {  
 
-      const { inputs, repository } = context.payload;
-      context.log.info('inputs:', inputs);
-      context.log.info('repository:', repository);
+      context.log.info('context:', context);
 
       
     });
