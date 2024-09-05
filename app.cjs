@@ -351,6 +351,8 @@ module.exports = (app) => {
       context.log.info(`Inputs: ${JSON.stringify(inputs)}`);
       context.log.info(`Triggered by: ${sender.login}`);
 
+      context.log.info('Release Tag:', inputs.release_tag);
+
       
     });
   
