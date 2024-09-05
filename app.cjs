@@ -16,6 +16,8 @@ const execPromise = promisify(exec);
  */
 async function updateBindings(context, owner, repo, branch_name, tag, scriptName) {
     context.log.info(`Updating bindings of ${owner}-${repo} to ${tag} using ${scriptName} on branch ${branch_name}`);
+    const script_target_repo = scriptName.split('_')[0];
+
     const { data: gencle_data } = await context.octokit.repos.get({
       owner: 'clEsperanto',
       repo: 'gencle',
@@ -45,7 +47,7 @@ async function updateBindings(context, owner, repo, branch_name, tag, scriptName
         git config --global user.email "github-actions[bot]@users.noreply.github.com" && \
         cd ${repo_dir} && \
         git add . && \
-        git commit -m "Update to ${tag}" && \
+        git commit -m "Update ${script_target_repo} to ${tag}" && \
         git push https://github-actions[bot]:${process.env.GITHUB_TOKEN}@github.com/${owner}/${repo}.git ${branch_name}
       `);
     } else {
@@ -343,16 +345,23 @@ module.exports = (app) => {
     // dispatch event from manual workflow behing triggered
     // must contain a release_tag as input (can be a branch name)
     app.on("workflow_dispatch", async (context) => {  
+      const { repository, inputs } = context.payload;
+      const { release_tag } = inputs; 
 
-      const { repository, workflow, inputs, sender } = context.payload;
-
-      context.log.info(`Workflow dispatch event for repository: ${repository.name}`);
-      context.log.info(`Workflow name: ${workflow}`);
-      context.log.info(`Inputs: ${JSON.stringify(inputs)}`);
-      context.log.info(`Triggered by: ${sender.login}`);
-
-      context.log.info('Release Tag:', inputs.release_tag);
-
+      context.log.info(`Workflow dispatch event for repository: ${repository.name} with release_tag: ${release_tag}`);
+      const scriptMapping = {
+        "pyclesperanto": "pyclesperanto_auto_update.py",
+        "clesperantoj": "clesperantoj_auto_update.py"
+      };
+      const scriptName = scriptMapping[repository.name];
+      if (scriptName) {
+        console.log('Updating bindings for:', scriptName);
+        await handleBindingsUpdate(context, repository, release_tag, scriptName);
+      } else {
+        console.log('Updating bindings for all');
+        await handleBindingsUpdate(context, repository, release_tag, "pyclesperanto_auto_update.py");
+        await handleBindingsUpdate(context, repository, release_tag, "clesperantoj_auto_update.py");
+      }
       
     });
   
