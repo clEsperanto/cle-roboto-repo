@@ -18,6 +18,9 @@ In a `clEsperanto` repository, add a workflow file with the step:
 > [!CAUTION]
 > It may be required to setup a python and install the package `requests` for correct usage.
 
+## Example
+
+See the [workflow](https://github.com/clEsperanto/bot_playground/blob/main/.github/workflows/call-cle-roboto.yml) of the [bot_playground](https://github.com/clEsperanto/bot_playground) repo for basic example usage.
 
 ## Call for help
 
