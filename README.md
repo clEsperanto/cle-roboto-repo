@@ -5,7 +5,6 @@ This action can be used in clEsperanto repository for automation.
 It currently covers code update for `pyclesperanto` and `clesperantoJ` when a new `CLIc` version is released.
 More functionalities will come later if needed.
 
-
 ## Setup
 
 In a `clEsperanto` repository, add a workflow file with the step:
