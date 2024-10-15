@@ -117295,7 +117295,8 @@ module.exports = (app) => {
         const releaseTag = client_payload.release_tag;
         const scriptMapping = {
           "pyclesperanto": "pyclesperanto_auto_update.py",
-          "clesperantoj": "clesperantoj_auto_update.py"
+          "clesperantoj": "clesperantoj_auto_update.py",
+          "clij3": "clij3_auto_update.py"
         };
         const scriptName = scriptMapping[repository.name];
         if (scriptName) {
@@ -117315,7 +117316,8 @@ module.exports = (app) => {
       context.log.info(`Workflow dispatch event for repository: ${repository.name} with release_tag: ${release_tag}`);
       const scriptMapping = {
         "pyclesperanto": "pyclesperanto_auto_update.py",
-        "clesperantoj": "clesperantoj_auto_update.py"
+        "clesperantoj": "clesperantoj_auto_update.py",
+        "clij3": "clij3_auto_update.py"
       };
       const scriptName = scriptMapping[repository.name];
       if (scriptName) {
